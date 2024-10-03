@@ -19,14 +19,13 @@ const initialFriends = [
     image: "https://i.pravatar.cc/48?u=499476",
     balance: 0,
   },
-];
+]
 
 function Button({ children, onClick }) {
   return <button className="button" onClick={onClick}>
     {children}
   </button>
 }
-
 
 export default function App() {
 
@@ -49,6 +48,16 @@ export default function App() {
       cur?.id === friend.id ? null : friend)
     setShowAddFriend(false)
   }
+
+  function handleSplitBill(value) {
+    setFriends((friends) => friends.map((friend) => friend.id === selectedFriend.id
+      ? { ...friend, balance: friend.balance + value }
+      : friend))
+
+    setSelectedFriend(null)
+
+  }
+
   return (
 
     <div className="app">
@@ -68,7 +77,8 @@ export default function App() {
 
       </div>
       {selectedFriend && <FormSplitBill
-        selectedFriend={selectedFriend} />}
+        selectedFriend={selectedFriend}
+        onSplitBill={handleSplitBill} />}
     </div>
   )
 }
@@ -156,7 +166,7 @@ function FormAddFriend({ onAddFriend }) {
   )
 }
 
-function FormSplitBill({ selectedFriend }) {
+function FormSplitBill({ selectedFriend, onSplitBill }) {
 
   const [bill, setBill] = useState("")
   const [paidByUser, setPaidByUser] = useState("")
@@ -164,8 +174,15 @@ function FormSplitBill({ selectedFriend }) {
 
   const paidByFriend = bill ? bill - paidByUser : ""
 
+  function handleSubmit(e) {
+    e.preventDefault()
+
+    if (!bill || !paidByUser) return
+    onSplitBill(whoIsPaying === "user" ? paidByFriend : -paidByUser)
+  }
+
   return (
-    <form className="form-split-bill">
+    <form className="form-split-bill" onSubmit={handleSubmit}>
       <h2>Split the bill with {selectedFriend.name}</h2>
 
       <label>:) Bill value</label>
@@ -179,9 +196,9 @@ function FormSplitBill({ selectedFriend }) {
         type="text"
         value={paidByUser}
         onChange={e => setPaidByUser(
-          Number(e.target.value) > bill 
-          ? paidByUser 
-          : Number(e.target.value))} />
+          Number(e.target.value) > bill
+            ? paidByUser
+            : Number(e.target.value))} />
 
       <label>:) {selectedFriend.name}'s expense</label>
       <input
